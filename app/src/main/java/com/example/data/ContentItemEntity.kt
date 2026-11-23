@@ -19,6 +19,7 @@ data class ContentItemEntity(
     val scheduledDateEpochDay: Long?,
     val scheduledTimeText: String,
     val isPinned: Boolean,
+    val publishedAtEpochDay: Long? = null,
     val createdAtMillis: Long,
     val updatedAtMillis: Long
 )
@@ -34,6 +35,7 @@ fun ContentItemEntity.toDomain(): ContentItem = ContentItem(
     scheduledDateEpochDay = scheduledDateEpochDay,
     scheduledTimeText = scheduledTimeText,
     isPinned = isPinned,
+    publishedAtEpochDay = publishedAtEpochDay,
     createdAtMillis = createdAtMillis,
     updatedAtMillis = updatedAtMillis
 )
@@ -49,6 +51,7 @@ fun ContentItem.toEntity(): ContentItemEntity = ContentItemEntity(
     scheduledDateEpochDay = scheduledDateEpochDay,
     scheduledTimeText = scheduledTimeText,
     isPinned = isPinned,
+    publishedAtEpochDay = publishedAtEpochDay,
     createdAtMillis = createdAtMillis,
     updatedAtMillis = updatedAtMillis
 )

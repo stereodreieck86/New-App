@@ -1,25 +1,43 @@
 package com.example.ui.theme
 
+import android.os.Build
 import androidx.compose.material3.Typography
+import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.example.R
 
+@OptIn(ExperimentalTextApi::class)
+private fun variableWeightFont(resId: Int, weight: FontWeight): Font {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        Font(
+            resId = resId,
+            weight = weight,
+            variationSettings = FontVariation.Settings(
+                FontVariation.weight(weight.weight)
+            )
+        )
+    } else {
+        Font(resId = resId, weight = weight)
+    }
+}
+
 val SpaceGroteskFamily = FontFamily(
-    Font(R.font.space_grotesk, FontWeight.Normal),
-    Font(R.font.space_grotesk, FontWeight.Medium),
-    Font(R.font.space_grotesk, FontWeight.SemiBold),
-    Font(R.font.space_grotesk, FontWeight.Bold)
+    variableWeightFont(R.font.space_grotesk, FontWeight.Normal),
+    variableWeightFont(R.font.space_grotesk, FontWeight.Medium),
+    variableWeightFont(R.font.space_grotesk, FontWeight.SemiBold),
+    variableWeightFont(R.font.space_grotesk, FontWeight.Bold)
 )
 
 val PlusJakartaSansFamily = FontFamily(
-    Font(R.font.plus_jakarta_sans, FontWeight.Normal),
-    Font(R.font.plus_jakarta_sans, FontWeight.Medium),
-    Font(R.font.plus_jakarta_sans, FontWeight.SemiBold),
-    Font(R.font.plus_jakarta_sans, FontWeight.Bold)
+    variableWeightFont(R.font.plus_jakarta_sans, FontWeight.Normal),
+    variableWeightFont(R.font.plus_jakarta_sans, FontWeight.Medium),
+    variableWeightFont(R.font.plus_jakarta_sans, FontWeight.SemiBold),
+    variableWeightFont(R.font.plus_jakarta_sans, FontWeight.Bold)
 )
 
 val CreatorDeskTypography = Typography(

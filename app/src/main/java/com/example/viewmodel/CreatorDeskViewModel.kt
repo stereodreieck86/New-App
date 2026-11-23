@@ -40,7 +40,9 @@ data class EditorDraft(
     val status: ContentStatus = ContentStatus.IDEA,
     val scheduledDateEpochDay: Long? = null,
     val scheduledTimeText: String = "",
-    val isPinned: Boolean = false
+    val isPinned: Boolean = false,
+    val publishedAtEpochDay: Long? = null,
+    val createdAtMillis: Long = System.currentTimeMillis()
 )
 
 data class DashboardMetrics(
@@ -55,6 +57,7 @@ data class DashboardMetrics(
 )
 
 data class CreatorDeskUiState(
+    val isPreferencesLoaded: Boolean = false,
     val activeTab: CreatorTab = CreatorTab.DASHBOARD,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val weeklyGoal: Int = 3,
@@ -68,7 +71,6 @@ data class CreatorDeskUiState(
     val selectedDayItems: List<ContentItem> = emptyList(),
     val metrics: DashboardMetrics = DashboardMetrics(),
     val searchQuery: String = "",
-    val isSearchActive: Boolean = false,
     val selectedPlatformFilter: ContentPlatform? = null,
     val selectedStatusFilter: ContentStatus? = null,
     val calendarMonth: YearMonthKey = SimpleDate.today().let { YearMonthKey(it.year, it.month) },
@@ -81,7 +83,6 @@ data class CreatorDeskUiState(
 private data class LocalUiFilterState(
     val activeTab: CreatorTab = CreatorTab.DASHBOARD,
     val searchQuery: String = "",
-    val isSearchActive: Boolean = false,
     val selectedPlatformFilter: ContentPlatform? = null,
     val selectedStatusFilter: ContentStatus? = null,
     val calendarMonth: YearMonthKey = SimpleDate.today().let { YearMonthKey(it.year, it.month) },
@@ -134,11 +135,8 @@ class CreatorDeskViewModel(
             matchesQuery && matchesPlatform && matchesStatus
         }
 
-        val hookItems = items.filter { it.hasHook && (query.isEmpty() ||
-            it.hook.lowercase().contains(query) ||
-            it.title.lowercase().contains(query) ||
-            it.platform.displayName.lowercase().contains(query))
-        }
+        // Hooks tab stays independent of the Ideas tab search filter
+        val hookItems = items.filter { it.hasHook }
 
         val upcoming = items
             .filter { item ->
@@ -168,7 +166,9 @@ class CreatorDeskViewModel(
         val publishedCount = countsByStatus[ContentStatus.PUBLISHED] ?: 0
         val publishedThisWeek = items.count { item ->
             if (item.status != ContentStatus.PUBLISHED) return@count false
-            val day = item.scheduledDateEpochDay ?: SimpleDate.fromUtcMillis(item.updatedAtMillis).toEpochDay()
+            val day = item.publishedAtEpochDay
+                ?: item.scheduledDateEpochDay
+                ?: SimpleDate.fromLocalMillis(item.updatedAtMillis).toEpochDay()
             day in weekRange
         }
 
@@ -190,6 +190,7 @@ class CreatorDeskViewModel(
         )
 
         return CreatorDeskUiState(
+            isPreferencesLoaded = true,
             activeTab = local.activeTab,
             themeMode = prefs.themeMode,
             weeklyGoal = prefs.weeklyGoal,
@@ -203,7 +204,6 @@ class CreatorDeskViewModel(
             selectedDayItems = selectedDayList,
             metrics = metrics,
             searchQuery = local.searchQuery,
-            isSearchActive = local.isSearchActive,
             selectedPlatformFilter = local.selectedPlatformFilter,
             selectedStatusFilter = local.selectedStatusFilter,
             calendarMonth = local.calendarMonth,
@@ -224,21 +224,6 @@ class CreatorDeskViewModel(
                 activeTab = CreatorTab.IDEAS,
                 selectedStatusFilter = status,
                 selectedPlatformFilter = null
-            )
-        }
-    }
-
-    fun toggleSearchBar() {
-        localState.update { current ->
-            val opening = !current.isSearchActive
-            current.copy(
-                isSearchActive = opening,
-                searchQuery = if (!opening) "" else current.searchQuery,
-                activeTab = if (opening && current.activeTab == CreatorTab.DASHBOARD) {
-                    CreatorTab.IDEAS
-                } else {
-                    current.activeTab
-                }
             )
         }
     }
@@ -356,10 +341,16 @@ class CreatorDeskViewModel(
                     status = item.status,
                     scheduledDateEpochDay = item.scheduledDateEpochDay,
                     scheduledTimeText = item.scheduledTimeText,
-                    isPinned = item.isPinned
+                    isPinned = item.isPinned,
+                    publishedAtEpochDay = item.publishedAtEpochDay,
+                    createdAtMillis = item.createdAtMillis
                 )
             )
         }
+    }
+
+    fun updateEditorDraft(updated: EditorDraft) {
+        localState.update { it.copy(editorDraft = updated) }
     }
 
     fun closeEditor() {
@@ -370,17 +361,6 @@ class CreatorDeskViewModel(
         val trimmedTitle = draft.title.trim()
         if (trimmedTitle.isEmpty()) return
 
-        val resolvedStatus = if (
-            draft.scheduledDateEpochDay != null &&
-            draft.status == ContentStatus.IDEA
-        ) {
-            ContentStatus.SCHEDULED
-        } else if (draft.hook.isNotBlank() && draft.status == ContentStatus.IDEA && draft.editingId == 0L) {
-            ContentStatus.SCRIPTING
-        } else {
-            draft.status
-        }
-
         val item = ContentItem(
             id = draft.editingId,
             title = trimmedTitle,
@@ -388,10 +368,12 @@ class CreatorDeskViewModel(
             hookStyle = draft.hookStyle,
             notes = draft.notes.trim(),
             platform = draft.platform,
-            status = resolvedStatus,
+            status = draft.status,
             scheduledDateEpochDay = draft.scheduledDateEpochDay,
             scheduledTimeText = draft.scheduledTimeText.trim(),
-            isPinned = draft.isPinned
+            isPinned = draft.isPinned,
+            publishedAtEpochDay = draft.publishedAtEpochDay,
+            createdAtMillis = draft.createdAtMillis
         )
 
         viewModelScope.launch {
@@ -420,7 +402,11 @@ class CreatorDeskViewModel(
     fun advanceStatus(item: ContentItem) {
         val next = item.status.next() ?: return
         viewModelScope.launch {
-            contentRepository.updateStatus(item.id, next)
+            contentRepository.updateStatus(
+                id = item.id,
+                status = next,
+                existingPublishedEpochDay = item.publishedAtEpochDay
+            )
         }
     }
 

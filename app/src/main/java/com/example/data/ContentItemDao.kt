@@ -21,8 +21,15 @@ interface ContentItemDao {
     @Query("DELETE FROM content_items WHERE id = :id")
     suspend fun deleteById(id: Long)
 
-    @Query("UPDATE content_items SET status = :status, updatedAtMillis = :updatedAt WHERE id = :id")
-    suspend fun updateStatus(id: Long, status: String, updatedAt: Long)
+    @Query(
+        "UPDATE content_items SET status = :status, publishedAtEpochDay = :publishedAtEpochDay, updatedAtMillis = :updatedAt WHERE id = :id"
+    )
+    suspend fun updateStatus(
+        id: Long,
+        status: String,
+        publishedAtEpochDay: Long?,
+        updatedAt: Long
+    )
 
     @Query("UPDATE content_items SET isPinned = :isPinned, updatedAtMillis = :updatedAt WHERE id = :id")
     suspend fun updatePinned(id: Long, isPinned: Boolean, updatedAt: Long)

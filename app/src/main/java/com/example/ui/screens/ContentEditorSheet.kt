@@ -50,6 +50,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -71,27 +72,20 @@ private val TimePresets = listOf("09:00", "12:00", "16:00", "18:00", "20:00")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ContentEditorSheet(
-    initialDraft: EditorDraft,
+    draft: EditorDraft,
+    onDraftChange: (EditorDraft) -> Unit,
     onDismiss: () -> Unit,
     onSave: (EditorDraft) -> Unit,
     onDelete: (Long) -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    var title by remember(initialDraft) { mutableStateOf(initialDraft.title) }
-    var hook by remember(initialDraft) { mutableStateOf(initialDraft.hook) }
-    var hookStyle by remember(initialDraft) { mutableStateOf(initialDraft.hookStyle) }
-    var notes by remember(initialDraft) { mutableStateOf(initialDraft.notes) }
-    var platform by remember(initialDraft) { mutableStateOf(initialDraft.platform) }
-    var status by remember(initialDraft) { mutableStateOf(initialDraft.status) }
-    var scheduledEpochDay by remember(initialDraft) { mutableStateOf(initialDraft.scheduledDateEpochDay) }
-    var scheduledTime by remember(initialDraft) { mutableStateOf(initialDraft.scheduledTimeText) }
-    var showTitleError by remember { mutableStateOf(false) }
-    var showDatePicker by remember { mutableStateOf(false) }
-    var showDeleteConfirm by remember { mutableStateOf(false) }
+    var showTitleError by rememberSaveable { mutableStateOf(false) }
+    var showDatePicker by rememberSaveable { mutableStateOf(false) }
+    var showDeleteConfirm by rememberSaveable { mutableStateOf(false) }
 
-    val isEditing = initialDraft.editingId != 0L
-    val hookWords = remember(hook) {
-        val trimmed = hook.trim()
+    val isEditing = draft.editingId != 0L
+    val hookWords = remember(draft.hook) {
+        val trimmed = draft.hook.trim()
         if (trimmed.isEmpty()) 0 else trimmed.split(Regex("\\s+")).size
     }
     val hookSeconds = remember(hookWords) {
@@ -162,9 +156,9 @@ fun ContentEditorSheet(
             ) {
                 // Title field
                 OutlinedTextField(
-                    value = title,
+                    value = draft.title,
                     onValueChange = {
-                        title = it
+                        onDraftChange(draft.copy(title = it))
                         if (showTitleError && it.isNotBlank()) showTitleError = false
                     },
                     label = { Text(stringResource(R.string.editor_field_title)) },
@@ -194,10 +188,10 @@ fun ContentEditorSheet(
                         contentPadding = PaddingValues(end = 4.dp)
                     ) {
                         items(ContentPlatform.entries, key = { it.name }) { itemPlatform ->
-                            val selected = platform == itemPlatform
+                            val selected = draft.platform == itemPlatform
                             FilterChip(
                                 selected = selected,
-                                onClick = { platform = itemPlatform },
+                                onClick = { onDraftChange(draft.copy(platform = itemPlatform)) },
                                 leadingIcon = {
                                     Icon(
                                         imageVector = itemPlatform.icon,
@@ -266,8 +260,8 @@ fun ContentEditorSheet(
                     }
 
                     OutlinedTextField(
-                        value = hook,
-                        onValueChange = { hook = it },
+                        value = draft.hook,
+                        onValueChange = { onDraftChange(draft.copy(hook = it)) },
                         placeholder = { Text(stringResource(R.string.editor_field_hook_placeholder)) },
                         minLines = 3,
                         maxLines = 5,
@@ -281,8 +275,8 @@ fun ContentEditorSheet(
                     LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         items(HookStyle.entries, key = { it.name }) { style ->
                             FilterChip(
-                                selected = hookStyle == style,
-                                onClick = { hookStyle = style },
+                                selected = draft.hookStyle == style,
+                                onClick = { onDraftChange(draft.copy(hookStyle = style)) },
                                 label = { Text(style.badgeText) },
                                 modifier = Modifier.testTag("editor_hook_style_${style.name.lowercase()}")
                             )
@@ -290,7 +284,7 @@ fun ContentEditorSheet(
                     }
 
                     // Quick starter formula chips when hook is empty
-                    if (hook.isBlank()) {
+                    if (draft.hook.isBlank()) {
                         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             items(DefaultHookTemplates.take(3), key = { it.id }) { template ->
                                 Surface(
@@ -299,13 +293,17 @@ fun ContentEditorSheet(
                                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                                     modifier = Modifier
                                         .clickable {
-                                            hook = template.formula
-                                            hookStyle = template.style
+                                            onDraftChange(
+                                                draft.copy(
+                                                    hook = template.formula,
+                                                    hookStyle = template.style
+                                                )
+                                            )
                                         }
                                         .testTag("editor_quick_template_${template.id}")
                                 ) {
                                     Row(
-                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                                     ) {
@@ -337,8 +335,8 @@ fun ContentEditorSheet(
                     LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         items(ContentStatus.entries, key = { it.name }) { itemStatus ->
                             FilterChip(
-                                selected = status == itemStatus,
-                                onClick = { status = itemStatus },
+                                selected = draft.status == itemStatus,
+                                onClick = { onDraftChange(draft.copy(status = itemStatus)) },
                                 leadingIcon = {
                                     Icon(
                                         imageVector = itemStatus.icon,
@@ -353,7 +351,7 @@ fun ContentEditorSheet(
                     }
                 }
 
-                // Schedule Date & Time
+                // Schedule Date & Time (presets + free text)
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text(
                         text = stringResource(R.string.editor_field_schedule),
@@ -365,7 +363,7 @@ fun ContentEditorSheet(
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        val dateLabel = scheduledEpochDay?.let {
+                        val dateLabel = draft.scheduledDateEpochDay?.let {
                             GermanDateFormat.formatFull(SimpleDate.fromEpochDay(it))
                         } ?: stringResource(R.string.editor_pick_date)
 
@@ -386,11 +384,15 @@ fun ContentEditorSheet(
                             Text(text = dateLabel)
                         }
 
-                        if (scheduledEpochDay != null) {
+                        if (draft.scheduledDateEpochDay != null) {
                             IconButton(
                                 onClick = {
-                                    scheduledEpochDay = null
-                                    scheduledTime = ""
+                                    onDraftChange(
+                                        draft.copy(
+                                            scheduledDateEpochDay = null,
+                                            scheduledTimeText = ""
+                                        )
+                                    )
                                 },
                                 modifier = Modifier.testTag("editor_clear_date_button")
                             ) {
@@ -402,7 +404,7 @@ fun ContentEditorSheet(
                         }
                     }
 
-                    if (scheduledEpochDay != null) {
+                    if (draft.scheduledDateEpochDay != null) {
                         LazyRow(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalAlignment = Alignment.CenterVertically
@@ -417,22 +419,39 @@ fun ContentEditorSheet(
                             }
                             items(TimePresets, key = { it }) { preset ->
                                 FilterChip(
-                                    selected = scheduledTime == preset,
+                                    selected = draft.scheduledTimeText == preset,
                                     onClick = {
-                                        scheduledTime = if (scheduledTime == preset) "" else preset
+                                        val next = if (draft.scheduledTimeText == preset) "" else preset
+                                        onDraftChange(draft.copy(scheduledTimeText = next))
                                     },
                                     label = { Text(preset) },
                                     modifier = Modifier.testTag("editor_time_$preset")
                                 )
                             }
                         }
+
+                        OutlinedTextField(
+                            value = draft.scheduledTimeText,
+                            onValueChange = { input ->
+                                if (input.length <= 10) {
+                                    onDraftChange(draft.copy(scheduledTimeText = input))
+                                }
+                            },
+                            label = { Text(stringResource(R.string.editor_field_time)) },
+                            placeholder = { Text(stringResource(R.string.editor_time_custom_placeholder)) },
+                            singleLine = true,
+                            shape = MaterialTheme.shapes.medium,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("editor_custom_time_input")
+                        )
                     }
                 }
 
                 // Script Notes & CTA
                 OutlinedTextField(
-                    value = notes,
-                    onValueChange = { notes = it },
+                    value = draft.notes,
+                    onValueChange = { onDraftChange(draft.copy(notes = it)) },
                     label = { Text(stringResource(R.string.editor_field_notes)) },
                     placeholder = { Text(stringResource(R.string.editor_field_notes_placeholder)) },
                     minLines = 3,
@@ -467,21 +486,10 @@ fun ContentEditorSheet(
                 }
                 Button(
                     onClick = {
-                        if (title.isBlank()) {
+                        if (draft.title.isBlank()) {
                             showTitleError = true
                         } else {
-                            onSave(
-                                initialDraft.copy(
-                                    title = title,
-                                    hook = hook,
-                                    hookStyle = hookStyle,
-                                    notes = notes,
-                                    platform = platform,
-                                    status = status,
-                                    scheduledDateEpochDay = scheduledEpochDay,
-                                    scheduledTimeText = scheduledTime
-                                )
-                            )
+                            onSave(draft)
                         }
                     },
                     shape = CircleShape,
@@ -497,7 +505,7 @@ fun ContentEditorSheet(
     }
 
     if (showDatePicker) {
-        val initialMillis = scheduledEpochDay?.let {
+        val initialMillis = draft.scheduledDateEpochDay?.let {
             SimpleDate.fromEpochDay(it).toUtcMidnightMillis()
         } ?: SimpleDate.today().toUtcMidnightMillis()
 
@@ -509,10 +517,17 @@ fun ContentEditorSheet(
                     onClick = {
                         val selectedMillis = datePickerState.selectedDateMillis
                         if (selectedMillis != null) {
-                            scheduledEpochDay = SimpleDate.fromUtcMillis(selectedMillis).toEpochDay()
-                            if (status == ContentStatus.IDEA) {
-                                status = ContentStatus.SCHEDULED
+                            val nextStatus = if (draft.status == ContentStatus.IDEA) {
+                                ContentStatus.SCHEDULED
+                            } else {
+                                draft.status
                             }
+                            onDraftChange(
+                                draft.copy(
+                                    scheduledDateEpochDay = SimpleDate.fromUtcMillis(selectedMillis).toEpochDay(),
+                                    status = nextStatus
+                                )
+                            )
                         }
                         showDatePicker = false
                     },
@@ -539,7 +554,7 @@ fun ContentEditorSheet(
                 Text(
                     stringResource(
                         R.string.editor_delete_confirm_body,
-                        title.ifBlank { initialDraft.title }
+                        draft.title
                     )
                 )
             },
@@ -547,7 +562,7 @@ fun ContentEditorSheet(
                 Button(
                     onClick = {
                         showDeleteConfirm = false
-                        onDelete(initialDraft.editingId)
+                        onDelete(draft.editingId)
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.error,

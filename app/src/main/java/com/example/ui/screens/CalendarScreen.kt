@@ -10,10 +10,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -240,6 +240,23 @@ private fun DayScheduleList(
                     onTogglePin = { onTogglePin(item) }
                 )
             }
+            item(key = "wide_add_another_for_day") {
+                FilledTonalButton(
+                    onClick = onAddForSelectedDate,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("calendar_add_more_button"),
+                    shape = CircleShape
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Add,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(text = stringResource(R.string.calendar_add_for_day))
+                }
+            }
         }
         if (unscheduledItems.isNotEmpty()) {
             item(key = "wide_unscheduled_header") {
@@ -374,7 +391,7 @@ private fun MonthCalendarCard(
                                 Spacer(
                                     modifier = Modifier
                                         .weight(1f)
-                                        .aspectRatio(1f)
+                                        .heightIn(min = 48.dp)
                                 )
                             }
                         }
@@ -407,10 +424,11 @@ private fun CalendarDayCell(
 
     Box(
         modifier = modifier
-            .aspectRatio(1f)
+            .heightIn(min = 48.dp)
             .clip(RoundedCornerShape(14.dp))
             .background(containerColor)
-            .clickable(onClick = onClick),
+            .clickable(onClick = onClick)
+            .padding(vertical = 6.dp),
         contentAlignment = Alignment.Center
     ) {
         Column(

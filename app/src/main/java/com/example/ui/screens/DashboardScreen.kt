@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -351,7 +352,7 @@ private fun StudioHeroCard(
                                 color = HeroInkPrimary
                             )
                             Text(
-                                text = "Woche",
+                                text = stringResource(R.string.dashboard_week_short),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = HeroInkSecondary
                             )
@@ -389,12 +390,13 @@ private fun StudioHeroCard(
                         shape = CircleShape,
                         color = Color.White.copy(alpha = 0.12f),
                         modifier = Modifier
+                            .heightIn(min = 48.dp)
                             .clip(CircleShape)
                             .clickable(onClick = onOpenGoalDialog)
                             .testTag("hero_adjust_goal_button")
                     ) {
                         Row(
-                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
@@ -405,7 +407,7 @@ private fun StudioHeroCard(
                                 modifier = Modifier.size(16.dp)
                             )
                             Text(
-                                text = "Ziel",
+                                text = stringResource(R.string.dashboard_goal_short),
                                 style = MaterialTheme.typography.labelLarge,
                                 color = HeroInkPrimary
                             )
@@ -531,13 +533,14 @@ private fun PipelineProgressCard(
                     Column(
                         modifier = Modifier
                             .weight(1f)
+                            .heightIn(min = 56.dp)
                             .clip(MaterialTheme.shapes.small)
                             .background(MaterialTheme.colorScheme.surfaceContainerLow)
                             .clickable { onStatusSelected(status) }
                             .padding(vertical = 10.dp, horizontal = 4.dp)
                             .testTag("pipeline_stage_${status.name.lowercase()}"),
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                        verticalArrangement = Arrangement.Center
                     ) {
                         Text(
                             text = count.toString(),

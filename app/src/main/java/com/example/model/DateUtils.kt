@@ -39,8 +39,14 @@ data class SimpleDate(
     companion object {
         private const val MILLIS_PER_DAY = 86_400_000L
 
-        fun today(): SimpleDate {
-            val cal = Calendar.getInstance()
+        fun today(): SimpleDate = fromLocalMillis(System.currentTimeMillis())
+
+        fun fromLocalMillis(
+            millis: Long,
+            timeZone: TimeZone = TimeZone.getDefault()
+        ): SimpleDate {
+            val cal = Calendar.getInstance(timeZone)
+            cal.timeInMillis = millis
             return SimpleDate(
                 year = cal.get(Calendar.YEAR),
                 month = cal.get(Calendar.MONTH) + 1,
@@ -62,15 +68,8 @@ data class SimpleDate(
             return SimpleDate(year = y, month = m, day = d)
         }
 
-        fun fromUtcMillis(utcMillis: Long): SimpleDate {
-            val cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
-            cal.timeInMillis = utcMillis
-            return SimpleDate(
-                year = cal.get(Calendar.YEAR),
-                month = cal.get(Calendar.MONTH) + 1,
-                day = cal.get(Calendar.DAY_OF_MONTH)
-            )
-        }
+        fun fromUtcMillis(utcMillis: Long): SimpleDate =
+            fromLocalMillis(utcMillis, TimeZone.getTimeZone("UTC"))
 
         fun daysInMonth(year: Int, month: Int): Int = when (month) {
             1, 3, 5, 7, 8, 10, 12 -> 31

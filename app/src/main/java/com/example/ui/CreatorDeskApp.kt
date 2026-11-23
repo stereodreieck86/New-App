@@ -201,7 +201,7 @@ fun CreatorDeskApp(
                     text = {
                         Text(
                             text = when (uiState.activeTab) {
-                                CreatorTab.HOOKS -> "Neuer Hook"
+                                CreatorTab.HOOKS -> stringResource(R.string.action_new_hook)
                                 else -> stringResource(R.string.action_new_idea)
                             }
                         )
@@ -315,7 +315,8 @@ fun CreatorDeskApp(
     val draft = uiState.editorDraft
     if (draft != null) {
         ContentEditorSheet(
-            initialDraft = draft,
+            draft = draft,
+            onDraftChange = { viewModel.updateEditorDraft(it) },
             onDismiss = { viewModel.closeEditor() },
             onSave = { updatedDraft ->
                 viewModel.saveContentItem(updatedDraft, savedSnackbarText)

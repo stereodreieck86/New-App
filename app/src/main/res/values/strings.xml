@@ -11,6 +11,7 @@
     <string name="action_search">Suchen</string>
     <string name="action_theme_toggle">Darstellungsmodus wechseln</string>
     <string name="action_new_idea">Neue Idee</string>
+    <string name="action_new_hook">Neuer Hook</string>
     <string name="theme_system">System</string>
     <string name="theme_light">Hell</string>
     <string name="theme_dark">Dunkel</string>
@@ -20,6 +21,8 @@
     <string name="dashboard_hero_title">Wochenziel &amp; Fokus</string>
     <string name="dashboard_hero_subtitle">%1$d von %2$d Beiträgen diese Woche veröffentlicht</string>
     <string name="dashboard_goal_adjust">Wochenziel anpassen</string>
+    <string name="dashboard_week_short">Woche</string>
+    <string name="dashboard_goal_short">Ziel</string>
     <string name="dashboard_kpi_total">Ideen gesamt</string>
     <string name="dashboard_kpi_hooks">Hooks bereit</string>
     <string name="dashboard_kpi_scheduled">Geplant</string>
@@ -44,6 +47,7 @@
     <string name="action_advance_status">Nächster Schritt</string>
     <string name="action_pin">Anheften</string>
     <string name="action_unpin">Loslösen</string>
+    <string name="no_date_scheduled">Kein Termin festgelegt</string>
 
     <!-- Hooks Studio -->
     <string name="hooks_title">Video-Einstiege (Hooks)</string>
@@ -75,12 +79,12 @@
     <string name="editor_field_platform">Plattform</string>
     <string name="editor_field_hook">Video-Einstieg (Hook)</string>
     <string name="editor_field_hook_placeholder">Was sagst oder zeigst du in den ersten 3 Sekunden?</string>
-    <string name="editor_field_hook_style">Hook-Stil</string>
     <string name="editor_field_status">Status &amp; Fortschritt</string>
     <string name="editor_field_schedule">Veröffentlichungstermin</string>
     <string name="editor_pick_date">Datum wählen</string>
     <string name="editor_clear_date">Termin entfernen</string>
     <string name="editor_field_time">Uhrzeit (optional)</string>
+    <string name="editor_time_custom_placeholder">z. B. 17:30</string>
     <string name="editor_field_notes">Skript-Notizen &amp; Call-to-Action</string>
     <string name="editor_field_notes_placeholder">Stichpunkte, B-Roll-Ideen, Call-to-Action…</string>
     <string name="editor_save">Speichern</string>

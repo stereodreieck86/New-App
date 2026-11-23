@@ -155,6 +155,7 @@ data class ContentItem(
     val scheduledDateEpochDay: Long? = null,
     val scheduledTimeText: String = "",
     val isPinned: Boolean = false,
+    val publishedAtEpochDay: Long? = null,
     val createdAtMillis: Long = System.currentTimeMillis(),
     val updatedAtMillis: Long = System.currentTimeMillis()
 ) {

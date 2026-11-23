@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -149,13 +150,13 @@ fun SectionHeader(
             color = MaterialTheme.colorScheme.onBackground
         )
         if (actionLabel != null && onActionClick != null) {
-            Surface(
-                shape = CircleShape,
-                color = Color.Transparent,
+            Box(
                 modifier = Modifier
+                    .heightIn(min = 48.dp)
                     .clip(CircleShape)
                     .clickable(onClick = onActionClick)
-                    .padding(horizontal = 8.dp, vertical = 6.dp)
+                    .padding(horizontal = 12.dp),
+                contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = actionLabel,
@@ -365,7 +366,7 @@ fun ContentItemCard(
                     }
                 } else {
                     Text(
-                        text = "Kein Termin festgelegt",
+                        text = stringResource(R.string.no_date_scheduled),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

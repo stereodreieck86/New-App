@@ -1,5 +1,8 @@
 package com.example.ui.screens
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -36,10 +39,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -61,7 +63,7 @@ fun HooksScreen(
     onHookCopied: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val clipboard = LocalClipboardManager.current
+    val context = LocalContext.current
     val copiedMessage = stringResource(R.string.hook_copied_snackbar)
 
     LazyColumn(
@@ -171,7 +173,8 @@ fun HooksScreen(
                     item = item,
                     onClick = { onEditItem(item) },
                     onCopyClick = {
-                        clipboard.setText(AnnotatedString(item.hook))
+                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+                        clipboard?.setPrimaryClip(ClipData.newPlainText("Creator Desk Hook", item.hook))
                         onHookCopied(copiedMessage)
                     },
                     modifier = Modifier.padding(horizontal = 16.dp)

@@ -31,8 +31,10 @@ class MainActivity : ComponentActivity() {
             val viewModel: CreatorDeskViewModel = viewModel(factory = factory)
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-            CreatorDeskTheme(themeMode = uiState.themeMode) {
-                CreatorDeskApp(viewModel = viewModel)
+            if (uiState.isPreferencesLoaded) {
+                CreatorDeskTheme(themeMode = uiState.themeMode) {
+                    CreatorDeskApp(viewModel = viewModel)
+                }
             }
         }
     }

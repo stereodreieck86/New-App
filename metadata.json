@@ -1,0 +1,6 @@
+{
+  "name": "Creator Desk",
+  "description": "Moderne Content-Creator-App zum Speichern von Video-Ideen, Schreiben von Hooks, Planen von Beiträgen im Kalender und Verfolgen des Fortschritts – komplett lokal auf dem Gerät.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
